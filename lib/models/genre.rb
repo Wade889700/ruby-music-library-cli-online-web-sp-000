@@ -41,15 +41,13 @@ class Genre
 
 
   def add_song(song)
-    song.genre = self unless song.genre == self
-    @songs << song unless @songs.include?(song)
+    song.genre = self unless song.genre == self #將自身賦予給Song物件的實例(song)的genre特性。
+    @songs << song unless @songs.include?(song) #再將這個Song物件的實例(song)加到Genre本身物件裡的@songs列表
   end
 
 
   def artists
-    artists = @songs.collect do |song|
-      song.artist
-    end
-    artists.uniq
+    #a has many through
+    @songs.collect {|song| song.artist}.uniq
   end
 end
