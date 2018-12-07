@@ -1,12 +1,12 @@
 class Song
 
-  attr_accessor :name
+  attr_accessor :name,:artist, :genre
   @@all=[]
 
   def initialize(name,artist=nil,genre=nil)
     @name = name
-    self.artist = artist
-    self.genre = genre 
+    self.artist = artist if artist
+    self.genre = genre  if genre
   end
 
   def self.all
@@ -51,24 +51,18 @@ class Song
   end
 
   def genre=(genre)
-    if @genre == nil
-      @genre = genre
-    else
-      @genre= @genre
-    end
-    if self.genre != nil
-      @genre.add_song(self)
-    end
-    @genre
+    genre.songs<<self unless genre.songs.include?(self) #Tell genre thatit has a new song
+
+    @genre = genre #Assign that genre to myself
 
   end
 
   def genre
     @genre
   end
+
   def self.create_from_filename(name)
     @@all << self.new_from_filename(name)
-
   end
 
   def self.new_from_filename(name)
