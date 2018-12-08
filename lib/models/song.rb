@@ -1,89 +1,53 @@
+require 'pry'
 class Song
-
-  attr_accessor :name
-  @@all=[]
-
-  def initialize(name,artist=nil,genre=nil)
+  extend Concerns::Findable
+  attr_accessor :name, :artist, :genre
+   @@all = []
+   def initialize (name, artist=nil, genre=nil)
+    @@all << self
     @name = name
-    self.artist = artist
-    self.genre = genre 
+    @artist = artist
+    self.artist = artist if artist != nil
+    @genre = genre
+    self.genre = genre if genre != nil
   end
-
-  def self.all
+   def artist=(artist)
+    @artist = artist
+    self.artist.add_song(self)
+  end
+   def genre=(genre)
+    @genre = genre
+    self.genre.songs << self unless genre.songs.include?(self)
+  end
+   def self.all
     @@all
   end
-
-  def self.destroy_all
-    @@all.clear
+   def self.destroy_all
+    @@all = []
   end
-
-  def save
+   def save
     @@all << self
   end
-  def self.create(name)
-    self.new(name).tap do |artist|
-      artist.save
-    end
-  end
-
-  def self.find_by_name(name)
-    @@all.detect {|song| song.name == name}
-  end
-
-  def self.find_or_create_by_name(name)
-    self.find_by_name(name) || self.create(name)
-  end
-
-  def artist=(artist)
-    if @artist == nil
-      @artist = artist
-    else
-      @artist = @artist
-    end
-    if self.artist != nil
-      @artist.add_song(self)
-    end
-    @artist
-  end
-
-  def artist
-    @artist
-  end
-
-  def genre=(genre)
-    if @genre == nil
-      @genre = genre
-    else
-      @genre= @genre
-    end
-    if self.genre != nil
-      @genre.add_song(self)
-    end
-    @genre
-
-  end
-
-  def genre
-    @genre
-  end
-  def self.create_from_filename(name)
-    @@all << self.new_from_filename(name)
-
-  end
-
-  def self.new_from_filename(name)
-    #parse the filename
-    song_name = name.split(" - ")[1]
-    artist_name = name.split(" - ")[0]
-    genre_name = name.split(" - ")[2].chomp(".mp3")
-    #create song and assign artist and genre attribute, & create connections
-    #prevent the creation of duplicate objects: songs, artists, genres
-    #song = self.create(song_name)
-    song = self.find_or_create_by_name(song_name)
-    #song.artist = Artist.create(artist_name)
-    song.artist = Artist.find_or_create_by_name(artist_name)
-    #song.genre = Genre.create(genre_name)
-    song.genre = Genre.find_or_create_by_name(genre_name)
+   def self.create (name)
+    song = Song.new(name)
+    song.save
     song
   end
-end
+   def self.find_by_name(name)
+    self.all.detect do |song|
+      song.name == name
+    end
+  end
+   def self.find_or_create_by_name(name)
+    self.find_by_name(name) || self.create(name)
+  end
+   def self.new_from_filename(filename)
+    filename_array = filename.split(" - ")
+     song_artist = Artist.find_or_create_by_name(filename_array[0])
+    song_genre = Genre.find_or_create_by_name(filename_array[2].split(".mp3")[0])
+    song = Song.new(filename_array[1],song_artist,song_genre)
+   end
+   def self.create_from_filename(filename)
+    self.new_from_filename(filename)
+  end
+end 
